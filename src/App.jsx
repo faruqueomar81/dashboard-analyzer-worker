@@ -19,13 +19,17 @@ const WORKER_URL =
 function styles() {
   return `
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: #f8fafc;
       color: #0f172a;
     }
-    button, input, textarea { font: inherit; }
+
+    button, input, textarea {
+      font: inherit;
+    }
 
     .app-shell {
       min-height: 100vh;
@@ -74,7 +78,7 @@ function styles() {
       margin: 10px 0 0;
       color: #475569;
       line-height: 1.55;
-      font-size: .95rem;
+      font-size: 0.95rem;
     }
 
     .card-body {
@@ -89,7 +93,7 @@ function styles() {
       padding: 8px 12px;
       background: #dbeafe;
       color: #1d4ed8;
-      font-size: .86rem;
+      font-size: 0.86rem;
       font-weight: 600;
     }
 
@@ -144,7 +148,10 @@ function styles() {
       transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
     }
 
-    .btn:hover { transform: translateY(-1px); }
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
     .btn:disabled {
       opacity: .55;
       cursor: not-allowed;
@@ -168,7 +175,10 @@ function styles() {
       border: 1px solid #cbd5e1;
     }
 
-    .status-box, .notice, .result-card, .summary-box {
+    .status-box,
+    .notice,
+    .result-card,
+    .summary-box {
       border-radius: 20px;
       border: 1px solid #e2e8f0;
       background: #f8fafc;
@@ -183,7 +193,7 @@ function styles() {
     }
 
     .status-label {
-      font-size: .8rem;
+      font-size: 0.8rem;
       font-weight: 700;
       color: #334155;
       text-transform: uppercase;
@@ -193,7 +203,7 @@ function styles() {
     .status-value {
       margin-top: 4px;
       color: #475569;
-      font-size: .95rem;
+      font-size: 0.95rem;
     }
 
     .progress {
@@ -213,14 +223,14 @@ function styles() {
 
     .error {
       color: #b91c1c;
-      font-size: .92rem;
+      font-size: 0.92rem;
       margin-top: 10px;
       white-space: pre-wrap;
       word-break: break-word;
     }
 
     .field-label {
-      font-size: .78rem;
+      font-size: 0.78rem;
       color: #64748b;
       text-transform: uppercase;
       letter-spacing: .08em;
@@ -235,6 +245,7 @@ function styles() {
       background: white;
       padding: 12px 14px;
       outline: none;
+      resize: vertical;
     }
 
     .field-input:focus {
@@ -269,7 +280,7 @@ function styles() {
     }
 
     .result-title {
-      font-size: .82rem;
+      font-size: 0.82rem;
       color: #64748b;
       text-transform: uppercase;
       letter-spacing: .08em;
@@ -298,13 +309,13 @@ function styles() {
       border-radius: 999px;
       background: #eff6ff;
       color: #1d4ed8;
-      font-size: .82rem;
+      font-size: 0.82rem;
       font-weight: 700;
     }
 
     .footer-note {
       color: #64748b;
-      font-size: .9rem;
+      font-size: 0.9rem;
       line-height: 1.6;
     }
 
@@ -327,11 +338,47 @@ function styles() {
 
     @media (min-width: 960px) {
       .layout {
-        grid-template-columns: 1.05fr .95fr;
+        grid-template-columns: 1.05fr 0.95fr;
         align-items: start;
       }
     }
   `;
+}
+
+function resizeImage(dataUrl, maxWidth = 1400, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+
+    img.onload = () => {
+      const scale = Math.min(1, maxWidth / img.width);
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Canvas context unavailable."));
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error("Failed to resize image."));
+            return;
+          }
+          resolve(blob);
+        },
+        "image/jpeg",
+        quality
+      );
+    };
+
+    img.onerror = () => reject(new Error("Failed to load image for resize."));
+    img.src = dataUrl;
+  });
 }
 
 export default function App() {
@@ -399,11 +446,18 @@ export default function App() {
   const captureFrame = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
+
     if (!video || !canvas) return;
 
     canvas.width = video.videoWidth || 1280;
     canvas.height = video.videoHeight || 720;
+
     const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      setError("Canvas context unavailable.");
+      return;
+    }
+
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
     setCapturedImage(canvas.toDataURL("image/jpeg", 0.92));
@@ -441,11 +495,14 @@ export default function App() {
     try {
       setAnalyzing(true);
       setError("");
+      setStatus("Resizing image...");
+
+      const resizedBlob = await resizeImage(capturedImage, 1400, 0.82);
+
       setStatus("Analyzing dashboard...");
 
-      const blob = await fetch(capturedImage).then((r) => r.blob());
       const formData = new FormData();
-      formData.append("image", blob, "dashboard.jpg");
+      formData.append("image", resizedBlob, "dashboard.jpg");
       formData.append("context", contextNote || "");
 
       const response = await fetch(WORKER_URL, {
@@ -533,9 +590,7 @@ export default function App() {
                       <div className="camera-overlay">
                         <ImageIcon size={42} />
                         <div>
-                          <div
-                            style={{ fontWeight: 800, fontSize: "1.1rem" }}
-                          >
+                          <div style={{ fontWeight: 800, fontSize: "1.1rem" }}>
                             Capture or upload dashboard
                           </div>
                           <div
