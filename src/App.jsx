@@ -13,7 +13,8 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 
-const WORKER_URL = "https://YOUR-WORKER-NAME.YOUR-SUBDOMAIN.workers.dev";
+const WORKER_URL =
+  "https://dashboard-insight-worker.faruqueomar81.workers.dev";
 
 function styles() {
   return `
@@ -214,6 +215,8 @@ function styles() {
       color: #b91c1c;
       font-size: .92rem;
       margin-top: 10px;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
     .field-label {
@@ -316,6 +319,12 @@ function styles() {
       to { transform: rotate(360deg); }
     }
 
+    @media (max-width: 860px) {
+      .button-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
     @media (min-width: 960px) {
       .layout {
         grid-template-columns: 1.05fr .95fr;
@@ -335,12 +344,16 @@ export default function App() {
   const [capturedImage, setCapturedImage] = useState(null);
   const [contextNote, setContextNote] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
-  const [status, setStatus] = useState("Ready — upload or capture a Power BI dashboard image.");
+  const [status, setStatus] = useState(
+    "Ready — upload or capture a Power BI dashboard image."
+  );
   const [error, setError] = useState("");
   const [analysis, setAnalysis] = useState(null);
 
   useEffect(() => {
-    return () => stopCamera();
+    return () => {
+      stopCamera();
+    };
   }, []);
 
   const startCamera = async () => {
@@ -358,6 +371,7 @@ export default function App() {
       });
 
       streamRef.current = stream;
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
@@ -368,7 +382,9 @@ export default function App() {
     } catch {
       setCameraOn(false);
       setStatus("Camera unavailable");
-      setError("Camera access failed. Open over HTTPS and allow camera permission.");
+      setError(
+        "Camera access failed. Open over HTTPS and allow camera permission."
+      );
     }
   };
 
@@ -389,6 +405,7 @@ export default function App() {
     canvas.height = video.videoHeight || 720;
     const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
     setCapturedImage(canvas.toDataURL("image/jpeg", 0.92));
     setStatus("Dashboard captured ✅");
     setError("");
@@ -452,9 +469,9 @@ export default function App() {
       setAnalysis(parsed);
       setStatus("Analysis complete ✅");
     } catch (err) {
-      setError(`Analysis failed: ${err.message}`);
-      setStatus("Analysis failed");
       setAnalysis(null);
+      setStatus("Analysis failed");
+      setError(`Analysis failed: ${err?.message || "Unknown error"}`);
     } finally {
       setAnalyzing(false);
     }
@@ -467,7 +484,6 @@ export default function App() {
       <div className="app-shell">
         <div className="container">
           <div className="layout">
-            {/* LEFT */}
             <div className="left-stack">
               <section className="card">
                 <div className="card-header">
@@ -493,7 +509,8 @@ export default function App() {
                         Developed by Faruque
                       </div>
                       <p className="card-subtitle">
-                        Capture or upload a Power BI dashboard image and get a short workforce planning readout.
+                        Capture or upload a Power BI dashboard image and get a
+                        short workforce planning readout.
                       </p>
                     </div>
 
@@ -516,7 +533,9 @@ export default function App() {
                       <div className="camera-overlay">
                         <ImageIcon size={42} />
                         <div>
-                          <div style={{ fontWeight: 800, fontSize: "1.1rem" }}>
+                          <div
+                            style={{ fontWeight: 800, fontSize: "1.1rem" }}
+                          >
                             Capture or upload dashboard
                           </div>
                           <div
@@ -526,7 +545,8 @@ export default function App() {
                               lineHeight: 1.5,
                             }}
                           >
-                            Best results come from a clear screenshot or straight-on photo.
+                            Best results come from a clear screenshot or
+                            straight-on photo.
                           </div>
                         </div>
                       </div>
@@ -541,12 +561,19 @@ export default function App() {
                         <Play size={16} /> Start Camera
                       </button>
                     ) : (
-                      <button className="btn btn-secondary" onClick={stopCamera}>
+                      <button
+                        className="btn btn-secondary"
+                        onClick={stopCamera}
+                      >
                         <Pause size={16} /> Stop Camera
                       </button>
                     )}
 
-                    <button className="btn btn-secondary" onClick={captureFrame} disabled={!cameraOn}>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={captureFrame}
+                      disabled={!cameraOn}
+                    >
                       <Camera size={16} /> Capture
                     </button>
 
@@ -556,14 +583,20 @@ export default function App() {
                       disabled={!capturedImage || analyzing}
                     >
                       {analyzing ? (
-                        <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} />
+                        <Loader2
+                          size={16}
+                          style={{ animation: "spin 1s linear infinite" }}
+                        />
                       ) : (
                         <CheckCircle2 size={16} />
                       )}
                       {analyzing ? "Analyzing..." : "Analyze Dashboard"}
                     </button>
 
-                    <button className="btn btn-secondary" onClick={() => fileInputRef.current?.click()}>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
                       <Upload size={16} /> Upload
                     </button>
 
@@ -611,7 +644,6 @@ export default function App() {
               </section>
             </div>
 
-            {/* RIGHT */}
             <div className="right-stack">
               <section className="card">
                 <div className="card-header">
@@ -624,7 +656,10 @@ export default function App() {
                 <div className="card-body">
                   {analyzing ? (
                     <div className="empty">
-                      <Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />
+                      <Loader2
+                        size={18}
+                        style={{ animation: "spin 1s linear infinite" }}
+                      />
                       <div style={{ marginTop: 10 }}>Reading dashboard...</div>
                     </div>
                   ) : analysis ? (
@@ -632,7 +667,9 @@ export default function App() {
                       <div className="result-card">
                         <div className="result-top">
                           <CheckCircle2 size={18} color="#166534" />
-                          <div className="result-title">General Assessment</div>
+                          <div className="result-title">
+                            General Assessment
+                          </div>
                         </div>
                         <div className="result-value">
                           {analysis.general_assessment || "—"}
@@ -652,29 +689,38 @@ export default function App() {
                       <div className="result-card">
                         <div className="result-top">
                           <Briefcase size={18} color="#1d4ed8" />
-                          <div className="result-title">Hiring Recommendation</div>
+                          <div className="result-title">
+                            Hiring Recommendation
+                          </div>
                         </div>
                         <div className="result-value">
                           {analysis.hiring_recommendation || "—"}
                         </div>
                       </div>
 
-                      {Array.isArray(analysis.key_signals) && analysis.key_signals.length > 0 && (
-                        <div className="summary-box">
-                          <div className="field-label">Key signals</div>
-                          <div className="signal-wrap">
-                            {analysis.key_signals.slice(0, 5).map((item, idx) => (
-                              <span className="chip" key={`${item}-${idx}`}>
-                                {item}
-                              </span>
-                            ))}
+                      {Array.isArray(analysis.key_signals) &&
+                        analysis.key_signals.length > 0 && (
+                          <div className="summary-box">
+                            <div className="field-label">Key signals</div>
+                            <div className="signal-wrap">
+                              {analysis.key_signals
+                                .slice(0, 5)
+                                .map((item, idx) => (
+                                  <span
+                                    className="chip"
+                                    key={`${item}-${idx}`}
+                                  >
+                                    {item}
+                                  </span>
+                                ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
                     </div>
                   ) : (
                     <div className="empty">
-                      Upload or capture a dashboard image, then tap <strong>Analyze Dashboard</strong>.
+                      Upload or capture a dashboard image, then tap{" "}
+                      <strong>Analyze Dashboard</strong>.
                     </div>
                   )}
                 </div>
@@ -687,8 +733,9 @@ export default function App() {
                 <div className="card-body">
                   <div className="notice">
                     <div className="footer-note">
-                      Use on aggregate dashboard screenshots for workforce planning:
-                      headcount, vacancies, attrition, hiring pace, or staffing risk.
+                      Use on aggregate dashboard screenshots for workforce
+                      planning: headcount, vacancies, attrition, hiring pace, or
+                      staffing risk.
                     </div>
                   </div>
                 </div>
