@@ -288,10 +288,17 @@ function styles() {
     }
 
     .result-value {
-      font-size: 1.25rem;
+      font-size: 1.18rem;
       font-weight: 800;
       color: #0f172a;
-      line-height: 1.3;
+      line-height: 1.35;
+    }
+
+    .result-basis {
+      margin-top: 8px;
+      color: #475569;
+      font-size: 0.95rem;
+      line-height: 1.5;
     }
 
     .signal-wrap {
@@ -567,7 +574,7 @@ export default function App() {
                       </div>
                       <p className="card-subtitle">
                         Capture or upload a Power BI dashboard image and get a
-                        short workforce planning readout.
+                        concise assessment with supporting evidence.
                       </p>
                     </div>
 
@@ -704,7 +711,7 @@ export default function App() {
                 <div className="card-header">
                   <h2 className="card-title">Assessment Cards</h2>
                   <p className="card-subtitle">
-                    Short output only — no wordy summaries.
+                    Short decisions with the data basis behind each conclusion.
                   </p>
                 </div>
 
@@ -727,7 +734,10 @@ export default function App() {
                           </div>
                         </div>
                         <div className="result-value">
-                          {analysis.general_assessment || "—"}
+                          {analysis.general_assessment?.title || "—"}
+                        </div>
+                        <div className="result-basis">
+                          {analysis.general_assessment?.basis || "—"}
                         </div>
                       </div>
 
@@ -737,7 +747,10 @@ export default function App() {
                           <div className="result-title">Risk Assessment</div>
                         </div>
                         <div className="result-value">
-                          {analysis.risk_assessment || "—"}
+                          {analysis.risk_assessment?.title || "—"}
+                        </div>
+                        <div className="result-basis">
+                          {analysis.risk_assessment?.basis || "—"}
                         </div>
                       </div>
 
@@ -749,7 +762,10 @@ export default function App() {
                           </div>
                         </div>
                         <div className="result-value">
-                          {analysis.hiring_recommendation || "—"}
+                          {analysis.hiring_recommendation?.title || "—"}
+                        </div>
+                        <div className="result-basis">
+                          {analysis.hiring_recommendation?.basis || "—"}
                         </div>
                       </div>
 
@@ -759,7 +775,7 @@ export default function App() {
                             <div className="field-label">Key signals</div>
                             <div className="signal-wrap">
                               {analysis.key_signals
-                                .slice(0, 5)
+                                .slice(0, 6)
                                 .map((item, idx) => (
                                   <span
                                     className="chip"
